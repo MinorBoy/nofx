@@ -10,6 +10,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const (
+	// WebSocket API URL
+	// WS_BASE_URL = "wss://ws-fapi.binance.com/ws-fapi/v1"
+	WS_BASE_URL = "wss://testnet.binancefuture.com/ws-fapi/v1"
+)
+
 type WSClient struct {
 	conn        *websocket.Conn
 	mu          sync.RWMutex
@@ -81,7 +87,7 @@ func (w *WSClient) Connect() error {
 		HandshakeTimeout: 10 * time.Second,
 	}
 
-	conn, _, err := dialer.Dial("wss://ws-fapi.binance.com/ws-fapi/v1", nil)
+	conn, _, err := dialer.Dial(WS_BASE_URL, nil)
 	if err != nil {
 		return fmt.Errorf("WebSocket连接失败: %v", err)
 	}

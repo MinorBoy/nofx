@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	baseURL = "https://fapi.binance.com"
+	// baseURL = "https://fapi.binance.com"
+	baseURL = "https://testnet.binancefuture.com" // 测试网
 )
 
 type APIClient struct {
