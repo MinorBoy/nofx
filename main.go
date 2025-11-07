@@ -7,6 +7,7 @@ import (
 	"nofx/api"
 	"nofx/auth"
 	"nofx/config"
+	"nofx/logger"
 	"nofx/crypto"
 	"nofx/manager"
 	"nofx/market"
@@ -172,7 +173,19 @@ func main() {
 		log.Fatalf("❌ 读取config.json失败: %v", err)
 	}
 
-	log.Printf("📋 初始化配置数据库: %s", dbPath)
+	// 初始化日志系统
+	if err := logger.InitFromLogConfig(configFile.Log); err != nil {
+		fmt.Printf("⚠️  初始化日志系统失败: %v\n", err)
+	}
+	// 捕获标准日志输出
+	logger.CaptureStdLog()
+	defer logger.Shutdown()
+
+	logger.Info("🚀 启动AI多模型交易系统")
+
+	// 初始化数据库配置
+	logger.Infof("📋 初始化配置数据库: %s", dbPath)
+
 	database, err := config.NewDatabase(dbPath)
 	if err != nil {
 		log.Fatalf("❌ 初始化数据库失败: %v", err)
