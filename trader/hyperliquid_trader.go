@@ -414,6 +414,12 @@ func (t *HyperliquidTrader) OpenLong(symbol string, quantity float64, leverage i
 		ReduceOnly: false,
 	}
 
+	// 打印上下文 用于调试
+	log.Printf("  上下文: %+v", t.ctx)
+	// 打印订单详情用于调试
+	log.Printf("  🔧 发送开多仓订单: %+v", order)
+
+	// 执行订单
 	_, err = t.exchange.Order(t.ctx, order, nil)
 	if err != nil {
 		return nil, fmt.Errorf("开多仓失败: %w", err)
@@ -472,6 +478,12 @@ func (t *HyperliquidTrader) OpenShort(symbol string, quantity float64, leverage 
 		ReduceOnly: false,
 	}
 
+	// 打印上下文 用于调试
+	log.Printf("  上下文: %+v", t.ctx)
+	// 打印订单详情用于调试
+	log.Printf("  🔧 发送开空仓订单: %+v", order)
+
+	// 执行订单
 	_, err = t.exchange.Order(t.ctx, order, nil)
 	if err != nil {
 		return nil, fmt.Errorf("开空仓失败: %w", err)
@@ -539,6 +551,12 @@ func (t *HyperliquidTrader) CloseLong(symbol string, quantity float64) (map[stri
 		ReduceOnly: true, // 只平仓，不开新仓
 	}
 
+	// 打印上下文 用于调试
+	log.Printf("  上下文: %+v", t.ctx)
+	// 打印订单详情用于调试
+	log.Printf("  🔧 发送平多仓订单: %+v", order)
+
+	// 执行订单
 	_, err = t.exchange.Order(t.ctx, order, nil)
 	if err != nil {
 		return nil, fmt.Errorf("平多仓失败: %w", err)
@@ -611,6 +629,11 @@ func (t *HyperliquidTrader) CloseShort(symbol string, quantity float64) (map[str
 		ReduceOnly: true,
 	}
 
+	// 打印上下文 用于调试
+	log.Printf("  上下文: %+v", t.ctx)
+	// 打印订单详情用于调试
+	log.Printf("  🔧 发送平空仓订单: %+v", order)
+
 	_, err = t.exchange.Order(t.ctx, order, nil)
 	if err != nil {
 		return nil, fmt.Errorf("平空仓失败: %w", err)
@@ -662,6 +685,12 @@ func (t *HyperliquidTrader) CancelAllOrders(symbol string) error {
 	// 取消该币种的所有挂单
 	for _, order := range openOrders {
 		if order.Coin == coin {
+
+			// 打印上下文 用于调试
+			log.Printf("  上下文: %+v", t.ctx)
+			// 打印订单详情用于调试
+			log.Printf("  🔧 发送取消订单: %+v", order)
+
 			_, err := t.exchange.Cancel(t.ctx, coin, order.Oid)
 			if err != nil {
 				log.Printf("  ⚠ 取消订单失败 (oid=%d): %v", order.Oid, err)
@@ -689,6 +718,10 @@ func (t *HyperliquidTrader) CancelStopOrders(symbol string) error {
 	canceledCount := 0
 	for _, order := range openOrders {
 		if order.Coin == coin {
+			// 打印上下文 用于调试
+			log.Printf("  上下文: %+v", t.ctx)
+			// 打印订单详情用于调试
+			log.Printf("  🔧 发送取消订单: %+v", order)
 			_, err := t.exchange.Cancel(t.ctx, coin, order.Oid)
 			if err != nil {
 				log.Printf("  ⚠ 取消订单失败 (oid=%d): %v", order.Oid, err)
@@ -757,6 +790,9 @@ func (t *HyperliquidTrader) SetStopLoss(symbol string, positionSide string, quan
 		ReduceOnly: true,
 	}
 
+	log.Printf("  上下文: %+v", t.ctx)
+	log.Printf("  🔧 发送止损订单: %+v", order)
+
 	_, err := t.exchange.Order(t.ctx, order, nil)
 	if err != nil {
 		return fmt.Errorf("设置止损失败: %w", err)
@@ -793,6 +829,9 @@ func (t *HyperliquidTrader) SetTakeProfit(symbol string, positionSide string, qu
 		},
 		ReduceOnly: true,
 	}
+
+	log.Printf("  上下文: %+v", t.ctx)
+	log.Printf("  🔧 发送止盈订单: %+v", order)
 
 	_, err := t.exchange.Order(t.ctx, order, nil)
 	if err != nil {
