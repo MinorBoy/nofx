@@ -89,7 +89,10 @@ func Get(symbol string) (*Data, error) {
 	}
 
 	// 获取Funding Rate
-	fundingRate, _ := getFundingRate(symbol)
+	fundingRate, err := getFundingRate(symbol)
+	if err != nil {
+		return nil, fmt.Errorf("获取资金费率失败: %v", err)
+	}
 
 	// 计算日内系列数据
 	intradayData := calculateIntradaySeries(klines3m)
@@ -324,7 +327,7 @@ func calculateLongerTermData(klines []Kline) *LongerTermData {
 
 // getOpenInterestData 获取OI数据
 func getOpenInterestData(symbol string) (*OIData, error) {
-	url := fmt.Sprintf("https://fapi.binance.com/fapi/v1/openInterest?symbol=%s", symbol)
+	url := fmt.Sprintf("%s/fapi/v1/openInterest?symbol=%s", baseURL, symbol)
 
 	apiClient := NewAPIClient()
 	resp, err := apiClient.client.Get(url)
@@ -369,7 +372,9 @@ func getFundingRate(symbol string) (float64, error) {
 	}
 
 	// 缓存过期或不存在，调用 API
-	url := fmt.Sprintf("https://fapi.binance.com/fapi/v1/premiumIndex?symbol=%s", symbol)
+	url := fmt.Sprintf("%s/fapi/v1/premiumIndex?symbol=%s", baseURL, symbol)
+
+	fmt.Println("获取资金费率", symbol, url) // 调试用
 
 	apiClient := NewAPIClient()
 	resp, err := apiClient.client.Get(url)
