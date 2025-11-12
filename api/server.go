@@ -794,7 +794,7 @@ func (s *Server) handleUpdateTrader(c *gin.Context) {
 		log.Printf("⚠️ 重新加载交易员到内存失败: %v", err)
 	}
 
-	log.Printf("✓ 更新交易员成功: %s (模型: %s, 交易所: %s, 提示词模板: %s)", req.Name, req.AIModelID, req.ExchangeID, systemPromptTemplate)
+	log.Printf("✓ 更新交易员成功: %s (模型: %s, 交易所: %s, 提示词模板: %s, 币种: %s)", req.Name, req.AIModelID, req.ExchangeID, systemPromptTemplate, req.TradingSymbols)
 
 	c.JSON(http.StatusOK, gin.H{
 		"trader_id":   traderID,
