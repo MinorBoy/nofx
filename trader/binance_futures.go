@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"nofx/hook"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -63,7 +64,7 @@ type FuturesTrader struct {
 
 // NewFuturesTrader 创建合约交易器
 func NewFuturesTrader(apiKey, secretKey string, userId string, testnet bool) *FuturesTrader {
-	futures.UseTestnet = testnet
+	futures.UseTestnet = testnet || (os.Getenv("BINANCE_TESTNET_MODE") == "true")
 	client := futures.NewClient(apiKey, secretKey)
 
 	hookRes := hook.HookExec[hook.NewBinanceTraderResult](hook.NEW_BINANCE_TRADER, userId, client)

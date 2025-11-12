@@ -7,13 +7,21 @@ import (
 	"log"
 	"net/http"
 	"nofx/hook"
+	"os"
 	"strconv"
 	"time"
 )
 
+// 定义一个function，根据环境变量BINANCE_TESTNET_MODE是否为true来设置baseURL
+func GetBaseURL() string {
+	if os.Getenv("BINANCE_TESTNET_MODE") == "true" {
+		return os.Getenv("BINANCE_FUTURES_TESTNET_BASE_URL")
+	}
+	return os.Getenv("BINANCE_FUTURES_BASE_URL")
+}
+
 const (
-	// baseURL = "https://fapi.binance.com"
-	baseURL = "https://testnet.binancefuture.com" // 测试网
+	baseURL = "https://fapi.binance.com"
 )
 
 type APIClient struct {
@@ -37,7 +45,7 @@ func NewAPIClient() *APIClient {
 }
 
 func (c *APIClient) GetExchangeInfo() (*ExchangeInfo, error) {
-	url := fmt.Sprintf("%s/fapi/v1/exchangeInfo", baseURL)
+	url := fmt.Sprintf("%s/fapi/v1/exchangeInfo", GetBaseURL())
 	resp, err := c.client.Get(url)
 	if err != nil {
 		return nil, err
@@ -58,7 +66,7 @@ func (c *APIClient) GetExchangeInfo() (*ExchangeInfo, error) {
 }
 
 func (c *APIClient) GetKlines(symbol, interval string, limit int) ([]Kline, error) {
-	url := fmt.Sprintf("%s/fapi/v1/klines", baseURL)
+	url := fmt.Sprintf("%s/fapi/v1/klines", GetBaseURL())
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -125,7 +133,7 @@ func parseKline(kr KlineResponse) (Kline, error) {
 }
 
 func (c *APIClient) GetCurrentPrice(symbol string) (float64, error) {
-	url := fmt.Sprintf("%s/fapi/v1/ticker/price", baseURL)
+	url := fmt.Sprintf("%s/fapi/v1/ticker/price", GetBaseURL())
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return 0, err

@@ -4,16 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
 
+func GetWSBaseURL() string {
+	if os.Getenv("BINANCE_TESTNET_MODE") == "true" {
+		return os.Getenv("BINANCE_FUTURES_TESTNET_WS_BASE_URL")
+	}
+	return os.Getenv("BINANCE_FUTURES_WS_BASE_URL")
+}
+
 const (
 	// WebSocket API URL
-	// WS_BASE_URL = "wss://ws-fapi.binance.com/ws-fapi/v1"
-	WS_BASE_URL = "wss://testnet.binancefuture.com/ws-fapi/v1"
+	WS_BASE_URL = "wss://ws-fapi.binance.com/ws-fapi/v1"
 )
 
 type WSClient struct {
@@ -87,7 +94,7 @@ func (w *WSClient) Connect() error {
 		HandshakeTimeout: 10 * time.Second,
 	}
 
-	conn, _, err := dialer.Dial(WS_BASE_URL, nil)
+	conn, _, err := dialer.Dial(GetWSBaseURL(), nil)
 	if err != nil {
 		return fmt.Errorf("WebSocket连接失败: %v", err)
 	}
