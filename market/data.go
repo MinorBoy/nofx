@@ -137,9 +137,9 @@ func calculateEMA(klines []Kline, period int) float64 {
 	return ema
 }
 
-// calculateMACD 计算MACD
+// calculateMACD 计算完整的MACD指标
 func calculateMACD(klines []Kline) float64 {
-	if len(klines) < 26 {
+	if len(klines) < 34 { // 需要更多数据计算DEA
 		return 0
 	}
 
@@ -147,8 +147,41 @@ func calculateMACD(klines []Kline) float64 {
 	ema12 := calculateEMA(klines, 12)
 	ema26 := calculateEMA(klines, 26)
 
-	// MACD = EMA12 - EMA26
-	return ema12 - ema26
+	// DIF = EMA12 - EMA26
+	dif := ema12 - ema26
+
+	// 计算DEA（DIF的9日EMA）
+	// 需要先获取近9个交易日的DIF值
+	difValues := make([]float64, 9)
+	for i := 0; i < 9; i++ {
+		start := len(klines) - 9 + i
+		ema12Temp := calculateEMA(klines[:start+1], 12)
+		ema26Temp := calculateEMA(klines[:start+1], 26)
+		difValues[i] = ema12Temp - ema26Temp
+	}
+
+	// 计算DEA（DIF的9日EMA）
+	dea := calculateEMAForValues(difValues, 9)
+
+	// MACD柱 = (DIF - DEA) × 2
+	macdHistogram := (dif - dea) * 2
+	return macdHistogram
+}
+
+// calculateEMAForValues 计算给定数值序列的EMA
+func calculateEMAForValues(values []float64, period int) float64 {
+	if len(values) == 0 {
+		return 0
+	}
+
+	multiplier := 2.0 / float64(period+1)
+	ema := values[0]
+
+	for i := 1; i < len(values); i++ {
+		ema = values[i]*multiplier + ema*(1-multiplier)
+	}
+
+	return ema
 }
 
 // calculateRSI 计算RSI
