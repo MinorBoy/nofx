@@ -336,6 +336,49 @@ func buildSystemPrompt(accountEquity float64, btcEthLeverage, altcoinLeverage in
 	sb.WriteString("6. 开仓金额: 建议 **≥12 USDT** (交易所最小名义价值 10 USDT + 安全边际)\n\n")
 
 	// 3. 输出格式 - 动态生成
+	outputTemplate, err := GetPromptTemplate(templateName + "-output")
+	if err != nil {
+		// 如果模板不存在，记录错误并使用 default
+		log.Printf("⚠️  提示词模板 '%s' 不存在，使用 default: %v", templateName+"-output", err)
+		outputTemplate, err = GetPromptTemplate("default-output")
+		if err != nil {
+			// 如果连 default 都不存在，使用内置的简化版本
+			// log.Printf("❌ 无法加载任何提示词模板，使用内置简化版本")
+			// sb.WriteString("你是专业的加密货币交易AI。请根据市场数据做出交易决策。\n\n")
+			UseDefaultOuputputTemplate(&sb)
+		} else {
+			sb.WriteString(outputTemplate.Content)
+			sb.WriteString("\n\n")
+		}
+	} else {
+		sb.WriteString(outputTemplate.Content)
+		sb.WriteString("\n\n")
+	}
+
+	// // 3. 输出格式 - 动态生成
+	// sb.WriteString("# 输出格式 (严格遵守)\n\n")
+	// sb.WriteString("**必须使用XML标签 <reasoning> 和 <decision> 标签分隔思维链和决策JSON，避免解析错误**\n\n")
+	// sb.WriteString("## 格式要求\n\n")
+	// sb.WriteString("<reasoning>\n")
+	// sb.WriteString("你的思维链分析...\n")
+	// sb.WriteString("- 简洁分析你的思考过程 \n")
+	// sb.WriteString("</reasoning>\n\n")
+	// sb.WriteString("<decision>\n")
+	// sb.WriteString("```json\n[\n")
+	// sb.WriteString(fmt.Sprintf("  {\"symbol\": \"BTCUSDT\", \"action\": \"open_short\", \"leverage\": %d, \"position_size_usd\": %.0f, \"stop_loss\": 97000, \"take_profit\": 91000, \"confidence\": 85, \"risk_usd\": 300, \"reasoning\": \"下跌趋势+MACD死叉\"},\n", btcEthLeverage, accountEquity*5))
+	// sb.WriteString("  {\"symbol\": \"ETHUSDT\", \"action\": \"close_long\", \"reasoning\": \"止盈离场\"}\n")
+	// sb.WriteString("]\n```\n")
+	// sb.WriteString("</decision>\n\n")
+	// sb.WriteString("## 字段说明\n\n")
+	// sb.WriteString("- `action`: open_long | open_short | close_long | close_short | hold | wait\n")
+	// sb.WriteString("- `confidence`: 0-100（开仓建议≥75）\n")
+	// sb.WriteString("- 开仓时必填: leverage, position_size_usd, stop_loss, take_profit, confidence, risk_usd, reasoning\n\n")
+
+	return sb.String()
+}
+
+func UseDefaultOuputputTemplate(sb *strings.Builder) {
+	// 3. 输出格式 - 动态生成
 	sb.WriteString("# 输出格式 (严格遵守)\n\n")
 	sb.WriteString("**必须使用XML标签 <reasoning> 和 <decision> 标签分隔思维链和决策JSON，避免解析错误**\n\n")
 	sb.WriteString("## 格式要求\n\n")
@@ -345,7 +388,7 @@ func buildSystemPrompt(accountEquity float64, btcEthLeverage, altcoinLeverage in
 	sb.WriteString("</reasoning>\n\n")
 	sb.WriteString("<decision>\n")
 	sb.WriteString("```json\n[\n")
-	sb.WriteString(fmt.Sprintf("  {\"symbol\": \"BTCUSDT\", \"action\": \"open_short\", \"leverage\": %d, \"position_size_usd\": %.0f, \"stop_loss\": 97000, \"take_profit\": 91000, \"confidence\": 85, \"risk_usd\": 300, \"reasoning\": \"下跌趋势+MACD死叉\"},\n", btcEthLeverage, accountEquity*5))
+	sb.WriteString("  {\"symbol\": \"BTCUSDT\", \"action\": \"open_short\", \"leverage\": 20, \"position_size_usd\": 100, \"stop_loss\": 97000, \"take_profit\": 91000, \"confidence\": 85, \"risk_usd\": 300, \"reasoning\": \"下跌趋势+MACD死叉\"},\n")
 	sb.WriteString("  {\"symbol\": \"SOLUSDT\", \"action\": \"update_stop_loss\", \"new_stop_loss\": 155, \"reasoning\": \"移动止损至保本位\"},\n")
 	sb.WriteString("  {\"symbol\": \"ETHUSDT\", \"action\": \"close_long\", \"reasoning\": \"止盈离场\"}\n")
 	sb.WriteString("]\n```\n")
@@ -357,8 +400,6 @@ func buildSystemPrompt(accountEquity float64, btcEthLeverage, altcoinLeverage in
 	sb.WriteString("- update_stop_loss 时必填: new_stop_loss (注意是 new_stop_loss，不是 stop_loss)\n")
 	sb.WriteString("- update_take_profit 时必填: new_take_profit (注意是 new_take_profit，不是 take_profit)\n")
 	sb.WriteString("- partial_close 时必填: close_percentage (0-100)\n\n")
-
-	return sb.String()
 }
 
 // buildUserPrompt 构建 User Prompt（动态数据）
