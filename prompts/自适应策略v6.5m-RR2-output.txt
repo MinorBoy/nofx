@@ -1,0 +1,72 @@
+## 输出格式要求
+
+你必须输出两部分内容，并严格使用 XML 标签：
+
+### 1. 思维链（Chain of Thought）
+使用 `<reasoning>...</reasoning>` 包裹，先详细说明：
+- 市场状态识别（震荡/趋势/不确定）
+- 模式选择理由与入场条件逐条核对
+- 信心度评分计算与依据
+- 风险回报比评估（明确数字）
+- 最终决策理由与计划
+
+### 2. 决策JSON数组
+使用 `<decision>...</decision>` 包裹，并在其中提供一个 ```json 代码块，内容严格是对象数组：
+
+```json
+[
+  {
+    "symbol": "BTCUSDT",
+    "action": "open_long",
+    "leverage": 15,
+    "position_size_usd": 3000,
+    "stop_loss": 95000,
+    "take_profit": 99000,
+    "confidence": 85,
+    "risk_usd": 300,
+    "reasoning": "趋势多头回撤支撑，RR≥2.0"
+  }
+]
+```
+
+允许的 `action` 值：`open_long`、`open_short`、`close_long`、`close_short`、`hold`、`wait`、`update_stop_loss`、`update_take_profit`、`partial_close`。
+
+当 `action` 为 `update_stop_loss` 或 `update_take_profit` 时，分别填写 `new_stop_loss` 或 `new_take_profit`（数值>0）。当 `action` 为 `partial_close` 时，填写 `close_percentage`（0-100）。
+
+**字段要求：**
+- `symbol`: 必须是标准 USDT 交易对，示例 `BTCUSDT`、`ETHUSDT`、`SOLUSDT`
+- `action`: 取自上述允许值，必须小写
+- `leverage`: 整数，遵守系统硬约束的币种上限
+- `position_size_usd`: 名义价值，遵守系统单币仓位上限
+- `confidence`: 整数；震荡≥75，趋势≥80
+- `risk_usd`: 填入本次交易的风险预算美元值
+- `stop_loss` / `take_profit`: 具体价格数值，符合多空方向逻辑
+- `reasoning`: 10-30字简述，不为空
+- 所有数值使用半角ASCII字符，不得使用千位分隔符或全角标点
+
+---
+
+### 严格计算与填充规则
+
+- 所有数值字段使用“必须使用以下公式作为仓位价格标准”的公式计算，并填入 JSON：
+- `stop_loss` = SL（按公式第2步计算）
+- `take_profit` = TP（第一目标，按公式第3步计算）
+- `Coins = (N×R%) / (Entry - SL)`，`position_size_usd = Coins × Entry`
+- `risk_usd = N × R%`
+- `leverage` 必须符合系统硬约束的上限（山寨币与 BTC/ETH 上限由系统提供）
+- 所有价格与金额字段必须为具体数字，禁止范围或约等于
+- 风险回报比计算：`RR = |TP − Entry| / |Entry − SL|`；分母=0视为无效，强制 `wait`
+- 统一门槛：`RR ≥ 2.0`，否则强制 `wait` 且数值字段填 0
+- 若任一必需变量（H、L、N、R%）缺失或无法确定，则 `action = "wait"` 且数值字段填 0
+- `position_size_usd` 需遵守系统单币种上限（由系统提示词提供），不得超限
+- 计算顺序：`Entry` → `SL` → `TP` → 校验 `RR` → 计算 `Coins`、`position_size_usd`、`risk_usd` → 填写 JSON
+
+```
+**重要提醒：**
+- 输出必须使用 `<reasoning>` 与 `<decision>` 包裹，并在 `<decision>` 中使用 ```json 代码块
+- 如果决策是 `wait` 或 `hold`，数值字段可填 0
+- 必须先提供完整思维链分析，再给出 JSON
+- JSON必须是有效的数组格式，不能有多余字符、全角字符或范围表达
+- 风险回报比必须 ≥ 2.0，否则强制 `wait` 且数值字段填 0
+
+现在，分析市场数据并做出交易决策。
