@@ -522,6 +522,36 @@ func Format(data *Data) string {
 		sb.WriteString(fmt.Sprintf("3m ATR (14‑period): %.3f\n\n", data.IntradaySeries.ATR14))
 	}
 
+	if data.IntradaySeries15m != nil {
+		sb.WriteString("Intraday series (15‑minute intervals, oldest → latest):\n\n")
+
+		if len(data.IntradaySeries15m.MidPrices) > 0 {
+			sb.WriteString(fmt.Sprintf("Mid prices: %s\n\n", formatFloatSlice(data.IntradaySeries15m.MidPrices)))
+		}
+
+		if len(data.IntradaySeries15m.EMA20Values) > 0 {
+			sb.WriteString(fmt.Sprintf("EMA indicators (20‑period): %s\n\n", formatFloatSlice(data.IntradaySeries15m.EMA20Values)))
+		}
+
+		if len(data.IntradaySeries15m.MACDValues) > 0 {
+			sb.WriteString(fmt.Sprintf("MACD indicators: %s\n\n", formatFloatSlice(data.IntradaySeries15m.MACDValues)))
+		}
+
+		if len(data.IntradaySeries15m.RSI7Values) > 0 {
+			sb.WriteString(fmt.Sprintf("RSI indicators (7‑Period): %s\n\n", formatFloatSlice(data.IntradaySeries15m.RSI7Values)))
+		}
+
+		if len(data.IntradaySeries15m.RSI14Values) > 0 {
+			sb.WriteString(fmt.Sprintf("RSI indicators (14‑Period): %s\n\n", formatFloatSlice(data.IntradaySeries15m.RSI14Values)))
+		}
+
+		if len(data.IntradaySeries15m.Volume) > 0 {
+			sb.WriteString(fmt.Sprintf("Volume: %s\n\n", formatFloatSlice(data.IntradaySeries15m.Volume)))
+		}
+
+		sb.WriteString(fmt.Sprintf("15m ATR (14‑period): %.3f\n\n", data.IntradaySeries15m.ATR14))
+	}
+
 	if data.LongerTermContext != nil {
 		sb.WriteString("Longer‑term context (4‑hour timeframe):\n\n")
 
@@ -540,6 +570,27 @@ func Format(data *Data) string {
 
 		if len(data.LongerTermContext.RSI14Values) > 0 {
 			sb.WriteString(fmt.Sprintf("RSI indicators (14‑Period): %s\n\n", formatFloatSlice(data.LongerTermContext.RSI14Values)))
+		}
+	}
+
+	if data.LongerTermContext1h != nil {
+		sb.WriteString("Longer‑term context (1‑hour timeframe):\n\n")
+
+		sb.WriteString(fmt.Sprintf("20‑Period EMA: %.3f vs. 50‑Period EMA: %.3f\n\n",
+			data.LongerTermContext1h.EMA20, data.LongerTermContext1h.EMA50))
+
+		sb.WriteString(fmt.Sprintf("3‑Period ATR: %.3f vs. 14‑Period ATR: %.3f\n\n",
+			data.LongerTermContext1h.ATR3, data.LongerTermContext1h.ATR14))
+
+		sb.WriteString(fmt.Sprintf("Current Volume: %.3f vs. Average Volume: %.3f\n\n",
+			data.LongerTermContext1h.CurrentVolume, data.LongerTermContext1h.AverageVolume))
+
+		if len(data.LongerTermContext1h.MACDValues) > 0 {
+			sb.WriteString(fmt.Sprintf("MACD indicators: %s\n\n", formatFloatSlice(data.LongerTermContext1h.MACDValues)))
+		}
+
+		if len(data.LongerTermContext1h.RSI14Values) > 0 {
+			sb.WriteString(fmt.Sprintf("RSI indicators (14‑Period): %s\n\n", formatFloatSlice(data.LongerTermContext1h.RSI14Values)))
 		}
 	}
 
