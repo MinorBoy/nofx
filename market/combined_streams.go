@@ -4,12 +4,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
+
+// 定义一个function，根据环境变量BINANCE_TESTNET_MODE是否为true来设置baseURL
+func GetStreamBaseURL() string {
+	if os.Getenv("BINANCE_TESTNET_MODE") == "true" {
+		return os.Getenv("BINANCE_FUTURES_STREAM_TESTNET_WS_BASE_URL")
+	}
+	return os.Getenv("BINANCE_FUTURES_STREAM_WS_BASE_URL")
+}
 
 type CombinedStreamsClient struct {
 	conn        *websocket.Conn
@@ -35,7 +44,7 @@ func (c *CombinedStreamsClient) Connect() error {
 	}
 
 	// 组合流使用不同的端点
-	conn, _, err := dialer.Dial("wss://fstream.binance.com/stream", nil)
+	conn, _, err := dialer.Dial(GetStreamBaseURL(), nil)
 	if err != nil {
 		return fmt.Errorf("组合流WebSocket连接失败: %v", err)
 	}
