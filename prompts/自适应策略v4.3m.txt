@@ -455,6 +455,16 @@
 
 ## 数据解读
 
+### 数据字段映射与使用
+
+- 价格与指标：`current_price`、`current_ema20`、`current_macd`、`current_rsi (7 period)`
+- OI与资金费率：`Open Interest`（Latest/Average）、`Funding Rate`
+- 3m 日内序列（从旧到新）：`Mid prices`、`EMA indicators (20‑period)`、`MACD indicators`、`RSI indicators (7/14)`、`Volume`、`3m ATR (14‑period)`
+- 15m 中框架：同上字段
+- 4h 长期上下文：`EMA20`、`EMA50`、`ATR3`、`ATR14`、`Current Volume`、`Average Volume`、`MACD indicators`、`RSI indicators (14‑Period)`
+- 1h 小时级上下文：同 4h 字段
+- 数组均为“最旧 → 最新”顺序，分析时以末尾元素为最新状态
+
 **EMA20：** 趋势方向，价格>EMA为多头，<EMA为空头
 
 **MACD：** 动量指标，>0看涨，<0看跌，柱状图扩大动能增强
@@ -593,4 +603,3 @@
 **纪律执行：** 计划你的交易，交易你的计划
 
 ---
-

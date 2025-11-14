@@ -26,7 +26,7 @@ var (
 
 // Get 获取指定代币的市场数据
 func Get(symbol string) (*Data, error) {
-	var klines3m, klines4h []Kline
+	var klines3m, kline15m, kline1h, klines4h []Kline
 	var err error
 	// 标准化symbol
 	symbol = Normalize(symbol)
@@ -42,6 +42,18 @@ func Get(symbol string) (*Data, error) {
 		return nil, fmt.Errorf("%s data is stale, possible cache failure", symbol)
 	}
 
+	// 获取15分钟K线数据 (最近10个)
+	kline15m, err = WSMonitorCli.GetCurrentKlines(symbol, "15m") // 多获取用于计算指标
+	if err != nil {
+		return nil, fmt.Errorf("获取15分钟K线失败: %v", err)
+	}
+
+	// 获取1小时K线数据 (最近10个)
+	kline1h, err = WSMonitorCli.GetCurrentKlines(symbol, "1h") // 多获取用于计算指标
+	if err != nil {
+		return nil, fmt.Errorf("获取1小时K线失败: %v", err)
+	}
+
 	// 获取4小时K线数据 (最近10个)
 	klines4h, err = WSMonitorCli.GetCurrentKlines(symbol, "4h") // 多获取用于计算指标
 	if err != nil {
@@ -51,6 +63,14 @@ func Get(symbol string) (*Data, error) {
 	// 检查数据是否为空
 	if len(klines3m) == 0 {
 		return nil, fmt.Errorf("3分钟K线数据为空")
+	}
+	// 检查15分钟K线数据是否为空
+	if len(kline15m) == 0 {
+		return nil, fmt.Errorf("15分钟K线数据为空")
+	}
+	// 检查1小时K线数据是否为空
+	if len(kline1h) == 0 {
+		return nil, fmt.Errorf("1小时K线数据为空")
 	}
 	if len(klines4h) == 0 {
 		return nil, fmt.Errorf("4小时K线数据为空")
@@ -96,22 +116,26 @@ func Get(symbol string) (*Data, error) {
 
 	// 计算日内系列数据
 	intradayData := calculateIntradaySeries(klines3m)
+	intradayData15m := calculateIntradaySeries(kline15m)
 
 	// 计算长期数据
 	longerTermData := calculateLongerTermData(klines4h)
+	longerTermData1h := calculateLongerTermData(kline1h)
 
 	return &Data{
-		Symbol:            symbol,
-		CurrentPrice:      currentPrice,
-		PriceChange1h:     priceChange1h,
-		PriceChange4h:     priceChange4h,
-		CurrentEMA20:      currentEMA20,
-		CurrentMACD:       currentMACD,
-		CurrentRSI7:       currentRSI7,
-		OpenInterest:      oiData,
-		FundingRate:       fundingRate,
-		IntradaySeries:    intradayData,
-		LongerTermContext: longerTermData,
+		Symbol:              symbol,
+		CurrentPrice:        currentPrice,
+		PriceChange1h:       priceChange1h,
+		PriceChange4h:       priceChange4h,
+		CurrentEMA20:        currentEMA20,
+		CurrentMACD:         currentMACD,
+		CurrentRSI7:         currentRSI7,
+		OpenInterest:        oiData,
+		FundingRate:         fundingRate,
+		IntradaySeries:      intradayData,
+		IntradaySeries15m:   intradayData15m,
+		LongerTermContext:   longerTermData,
+		LongerTermContext1h: longerTermData1h,
 	}, nil
 }
 
